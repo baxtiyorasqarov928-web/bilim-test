@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilim Pro - Pro Intellektual Platforma</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #dc2626;
+            --bg-gradient: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%);
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; }
+        .container { width: 100%; max-width: 650px; }
+        .card { background: var(--card-bg); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); padding: 25px; display: none; animation: fadeIn 0.4s ease; }
+        .card.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        h1, h2 { color: var(--text-main); text-align: center; margin-bottom: 12px; }
+        p.subtitle { text-align: center; color: var(--text-muted); margin-bottom: 20px; font-size: 14px; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; color: var(--text-main); }
+        .form-control { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; outline: none; transition: 0.2s; }
+        .form-control:focus { border-color: var(--primary); }
+
+        .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--primary); color: white; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; margin-top: 15px; }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
+
+        .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .subject-btn { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .subject-btn span { font-size: 22px; }
+        .subject-btn:hover { border-color: var(--primary); background: #eef2ff; color: var(--primary); }
+
+        .profile-badge { background: #f1f5f9; border-radius: 12px; padding: 12px 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .trophy-box { display: flex; align-items: center; gap: 6px; font-weight: bold; color: var(--warning); font-size: 18px; }
+
+        /* Dumaloq diagramma va tahlil */
+        .stats-container { display: flex; align-items: center; justify-content: space-around; background: #f8fafc; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        .circular-progress { width: 70px; height: 70px; border-radius: 50%; background: conic-gradient(var(--primary) calc(var(--progress, 0) * 1%), #e2e8f0 0deg); display: flex; align-items: center; justify-content: center; position: relative; }
+        .circular-progress::before { content: ""; position: absolute; width: 54px; height: 54px; background: white; border-radius: 50%; }
+        .progress-value { position: relative; font-size: 14px; font-weight: bold; color: var(--primary); }
+
+        /* Reyting va o'yin bo'limi */
+        .leaderboard { background: #f8fafc; border-radius: 12px; padding: 10px 15px; margin-bottom: 15px; max-height: 120px; overflow-y: auto; border: 1px solid #e2e8f0; }
+        .leaderboard-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+
+        .game-card { background: #eef2ff; border: 2px dashed var(--primary); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 15px; }
+
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; color: var(--text-muted); font-weight: 600; }
+        .timer { background: #fee2e2; color: var(--danger); padding: 4px 8px; border-radius: 8px; font-weight: bold; }
+        .question-text { font-size: 16px; font-weight: 600; margin-bottom: 15px; line-height: 1.4; }
+        
+        .option-btn { display: block; width: 100%; padding: 12px 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 10px; background: white; cursor: pointer; text-align: left; font-size: 14px; transition: 0.2s; }
+        .option-btn:hover { background: #f8fafc; border-color: var(--primary); }
+        .option-btn.selected { background: #eef2ff; border-color: var(--primary); color: var(--primary); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 1. KIRISH -->
+    <div id="login-card" class="card active">
+        <h1>🎓 Bilim Pro Musobaqa</h1>
+        <p class="subtitle">Ism, familiya va yoshingizni kiriting (7 - 17 yosh)</p>
+        
+        <div class="form-group">
+            <label>Ismingiz:</label>
+            <input type="text" id="user-name" class="form-control" placeholder="Masalan: Bekzod">
+        </div>
+        <div class="form-group">
+            <label>Familiyangiz:</label>
+            <input type="text" id="user-surname" class="form-control" placeholder="Masalan: Karimov">
+        </div>
+        <div class="form-group">
+            <label>Yoshingiz (7 - 17):</label>
+            <input type="number" id="user-age" class="form-control" min="7" max="17" placeholder="Masalan: 12">
+        </div>
+        <button class="btn" onclick="registerUser()">Musobaqaga kirish ➔</button>
+    </div>
+
+    <!-- 2. BOSH SAHIFA -->
+    <div id="home-card" class="card">
+        <div class="profile-badge">
+            <div>
+                <h3 id="welcome-text" style="font-size: 15px; color: var(--primary);">Foydalanuvchi</h3>
+                <p id="user-level" style="font-size: 12px; color: var(--text-muted);">Daraja: Boshlang'ich</p>
+            </div>
+            <div class="trophy-box">🏆 <span id="user-trophies">0</span> / 100</div>
+        </div>
+
+        <!-- Dumaloq diagramma -->
+        <div class="stats-container">
+            <div class="circular-progress" id="circle-progress" style="--progress: 0;">
+                <span class="progress-value" id="progress-percent">0%</span>
+            </div>
+            <div>
+                <p style="font-size: 13px; font-weight: bold; color: var(--text-main);">O'zlashtirish Darajasi</p>
+                <p style="font-size: 11px; color: var(--text-muted);">Sinovlarni topshirib reytingizni oshiring!</p>
+            </div>
+        </div>
+
+        <!-- Mini-O'yin bo'limi -->
+        <div class="game-card">
+            <h3 style="font-size: 15px; color: var(--primary); margin-bottom: 5px;">🎮 Mantiqiy Mini-O'yin</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Miyani va tezkorlikni charxlovchi maxsus o'yin!</p>
+            <button class="btn" style="padding: 8px 12px; font-size: 13px; margin: 0 auto; width: 60%; background: #9333ea;" onclick="startMiniGame()">O'yinni boshlash 🎲</button>
+        </div>
+
+        <!-- Top o'quvchilar reytingi -->
+        <p style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: var(--text-muted);">🏆 Top O'quvchilar Reytingi:</p>
+        <div class="leaderboard" id="leaderboard-list"></div>
+
+        <h2>Fanlarni tanlang</h2>
+        <div class="subject-grid">
+            <button class="subject-btn" onclick="startQuiz('math')"><span>📐</span> Matematika</button>
+            <button class="subject-btn" onclick="startQuiz('history')"><span>🏛</span> Tarix</button>
+            <button class="subject-btn" onclick="startQuiz('uzbek')"><span>🇺🇿</span> Ona tili</button>
+            <button class="subject-btn" onclick="startQuiz('it')"><span>💻</span> Dasturlash & IT</button>
+            <button class="subject-btn" onclick="startQuiz('chemistry')"><span>🧪</span> Kimyo</button>
+            <button class="subject-btn" onclick="startQuiz('physics')"><span>🧲</span> Fizika</button>
+            <button class="subject-btn" onclick="startQuiz('english')"><span>🇬🇧</span> Ingliz tili</button>
+            <button class="subject-btn" onclick="startQuiz('biology')"><span>🌿</span> Biologiya</button>
+        </div>
+        <button class="btn" style="background: #64748b;" onclick="logout()">Boshqa hisobdan kirish 🔄</button>
+    </div>
+
+    <!-- 3. TEST SAHIFASI -->
+    <div id="quiz-card" class="card">
+        <div class="quiz-header">
+            <span id="question-progress">Savol: 1 / 10</span>
+            <span class="timer" id="timer">⏱ 30s</span>
+        </div>
+        <h2 id="question-text" style="text-align: left; font-size: 15px;">Savol yuklanmoqda...</h2>
+        <div id="options-container"></div>
+        <button class="btn" onclick="nextQuestion()">Keyingi savol ➔</button>
+    </div>
+
+    <!-- 4. MINI O'YIN SAHIFASI -->
+    <div id="game-card-view" class="card">
+        <h2>🎲 Tezkor Mantiqiy O'yin</h2>
+        <p class="subtitle" id="game-instruction">Berilgan so'zning to'g'ri juftini yoki mantiqiy davomini toping!</p>
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 15px;">
+            <h3 id="game-prompt" style="font-size: 22px; color: var(--primary);">Kutib turing...</h3>
+        </div>
+        <div id="game-options"></div>
+        <button class="btn" style="background: #64748b;" onclick="goHome()">Bosh sahifaga qaytish 🏠</button>
+    </div>
+
+    <!-- 5. NATIJA SAHIFASI -->
+    <div id="result-card" class="card">
+        <h1>🎉 Natija Tahlili</h1>
+        <p class="subtitle" id="result-summary">Test yakunlandi.</p>
+        <div style="text-align: center; margin: 20px 0;">
+            <h2 id="earned-trophies" style="color: var(--warning); font-size: 30px;">+0 🏆</h2>
+        </div>
+        <button class="btn" onclick="goHome()">Bosh sahifaga qaytish 🏠</button>
+    </div>
+</div>
+
+<script>
+    // Katta va doimiy almashtiriladigan savollar bazasi
+    const db = {
+        math: [
+            { q: "5 + 7 * 2 amali natijasi nechaga teng?", options: ["19", "24", "17", "14"], correct: 0 },
+            { q: "Kvadratning perimetri 36 sm bo'lsa, bir tomoni nechiga teng?", options: ["9 sm", "4 sm", "6 sm", "12 sm"], correct: 0 },
+            { q: "100 ning 25 foizi nechiga teng?", options: ["25", "20", "50", "75"], correct: 0 },
+            { q: "Agar x + 8 = 15 bo'lsa, x ni toping.", options: ["7", "5", "6", "8"], correct: 0 },
+            { q: "Uchburchak burchaklari yig'indisi necha gradus?", options: ["180°", "360°", "90°", "270°"], correct: 0 },
+            { q: "12 ni 4 ga bo'lib, 3 ga ko'paytiring.", options: ["9", "6", "12", "16"], correct: 0 },
+            { q: "2 ning kubi (2³) nechiga teng?", options: ["8", "6", "9", "4"], correct: 0 },
+            { q: "Bir soatda necha soniya bor?", options: ["3600", "600", "1800", "7200"], correct: 0 },
+            { q: "0.5 soni kasr ko'rinishida qanday yoziladi?", options: ["1/2", "1/4", "1/3", "3/4"], correct: 0 },
+            { q: "To'g'ri to'rtburchakning yuzasi formulasini toping.", options: ["a * b", "4 * a", "2 * (a+b)", "a * a"], correct: 0 },
+            { q: "9 ning kvadrati nechiga teng?", options: ["81", "72", "64", "49"], correct: 0 },
+            { q: "Eng kichik tub son qaysi?", options: ["2", "1", "3", "0"], correct: 0 }
+        ],
+        history: [
+            { q: "Amir Temur nechanchi yilda tug'ilgan?", options: ["1336-yil", "1405-yil", "1219-yil", "1389-yil"], correct: 0 },
+            { q: "Buyuk ipak yo'li qaysi qit'alarni bog'lagan?", options: ["Osiyo va Yevropa", "Afrika va Amerika", "Faqat Avstraliya", "Janubiy Amerika"], correct: 0 },
+            { q: "Alisher Navoiy tavallud topgan shahar?", options: ["Hirot", "Samarqand", "Buxoro", "Toshkent"], correct: 0 },
+            { q: "O'zbekiston Respublikasi Mustaqillik kuni qachon?", options: ["1-sentabr", "8-mart", "14-yanvar", "9-may"], correct: 0 },
+            { q: "Xiva xonligi qachon tashkil topgan?", options: ["1511-yil", "1800-yil", "1400-yil", "1650-yil"], correct: 0 },
+            { q: "Qadimgi Buxoro shahrining asosiy ramzi nima?", options: ["Ark qo'rg'oni", "Registon", "Kalta minor", "Sherdor"], correct: 0 },
+            { q: "Jaloliddin Manguberdi kim bo'lgan?", options: ["Sarkarda va shoh", "Shoir", "Olim", "Me'mor"], correct: 0 },
+            { q: "Temuriylar davri poytaxti qaysi shahar bo'lgan?", options: ["Samarqand", "Toshkent", "Xiva", "Qo'qon"], correct: 0 },
+            { q: "Boburiylar sulolasining asoschisi kim?", options: ["Zahiriddin Muhammad Bobur", "Amir Temur", "Ulug'bek", "Mirzo Buxoriy"], correct: 0 },
+            { q: "O'zbekiston bayrog'idagi yulduzlar soni nechta?", options: ["12 ta", "10 ta", "5 ta", "3 ta"], correct: 0 }
+        ],
+        uzbek: [
+            { q: "O'zbek alifbosida nechta harf bor?", options: ["29 ta", "26 ta", "30 ta", "32 ta"], correct: 0 },
+            { q: "Quyidagilardan qaysi biri unli tovush?", options: ["a", "b", "m", "s"], correct: 0 },
+            { q: "Imlo qoidalariga ko'ra to'g'ri yozilgan so'zni toping:", options: ["maktab", "maktap", "magtab", "maqtab"], correct: 0 },
+            { q: "Kelishik qo'shimchalarini aniqlang:", options: ["-ning, -ni, -ga", "-chi, -kor", "-lik, -siz", "-xon"], correct: 0 },
+            { q: "Sinonim so'zlar nima?", options: ["Ma'nosi bir xil, aytilishi har xil", "Ma'nosi qarama-qarshi", "Eski so'zlar", "Fanga oid so'zlar"], correct: 0 },
+            { q: "Antonym so'zlarni toping:", options: ["Issiq - Sovuq", "Katta - Katta", "Kitob - Daftar", "Qalam - Ruchka"], correct: 0 }
+        ],
+        it: [
+            { q: "HTML nimani anglatadi?", options: ["Hyper Text Markup Language", "High Transfer Machine Language", "Home Tool", "Hyperlink Model"], correct: 0 },
+            { q: "Kompyuterning miyasi deb nimaga aytiladi?", options: ["Protsessor (CPU)", "Monitor", "Klaviatura", "Sichqoncha"], correct: 0 },
+            { q: "Quyidagilardan qaysi biri dasturlash tili emas?", options: ["HTML", "Python", "JavaScript", "C++"], correct: 0 },
+            { q: "Internet tarmog'ining qisqartma nomi nima?", options: ["WWW", "PDF", "USB", "RAM"], correct: 0 }
+        ],
+        chemistry: [
+            { q: "Suvning kimyoviy formulasi qaysi?", options: ["H2O", "CO2", "NaCl", "O2"], correct: 0 },
+            { q: "Tuzning kimyoviy formulasi qaysi?", options: ["NaCl", "H2O", "HCl", "NaOH"], correct: 0 }
+        ],
+        physics: [
+            { q: "Tezlikning o'lchov birligi nima?", options: ["m/s", "kg", "N", "J"], correct: 0 },
+            { q: "Kuchning o'lchov birligi nima?", options: ["N'yuton (N)", "Joul (J)", "Vatt (W)", "Paskal (Pa)"], correct: 0 }
+        ],
+        english: [
+            { q: "'Apple' so'zining tarjimasi nima?", options: ["Olma", "Olmurut", "Uzum", "Anor"], correct: 0 },
+            { q: "Qaysi biri olmosh (Pronoun)?", options: ["He", "Run", "Beautiful", "Quickly"], correct: 0 }
+        ],
+        biology: [
+            { q: "Osimliklarda fotosintez qayerda sodir bo'ladi?", options: ["Bargda", "Ildizda", "Poyada", "Gulda"], correct: 0 },
+            { q: "Odam yuragida necha xona bor?", options: ["4 ta", "2 ta", "3 ta", "5 ta"], correct: 0 }
+        ]
+    };
+
+    const miniGames = [
+        { prompt: "Quyosh : Kunduz = Oy : ?", options: ["Kechasi", "Yulduz", "Bulut", "Issiq"], correct: 0 },
+        { prompt: "Kitob : O'qish = Qalam : ?", options: ["Yozish", "Chizish", "Daftar", "Rasm"], correct: 0 },
+        { prompt: "Suv : Muxit = Havo : ?", options: ["Nafas", "Shamol", "Bulut", "Kislota"], correct: 0 }
+    ];
+
+    let currentUser = null;
+    let questions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let selectedOption = null;
+    let timerInterval;
+    let timeLeft = 30;
+
+    function registerUser() {
+        const name = document.getElementById('user-name').value.trim();
+        const surname = document.getElementById('user-surname').value.trim();
+        const age = parseInt(document.getElementById('user-age').value);
+
+        if (!name || !surname || !age) {
+            alert("Iltimos, barcha maydonlarni to'ldiring!");
+            return;
+        }
+
+        const userKey = `${name}_${surname}`;
+        let trophies = parseInt(localStorage.getItem(`trophies_${userKey}`) || '0');
+
+        currentUser = { name, surname, age, trophies, key: userKey };
+
+        let leaderboard = JSON.parse(localStorage.getItem('bilim_pro_leaderboard') || '{}');
+        leaderboard[userKey] = { name: `${name} ${surname}`, trophies };
+        localStorage.setItem('bilim_pro_leaderboard', JSON.stringify(leaderboard));
+
+        updateProfileUI();
+        document.getElementById('login-card').classList.remove('active');
+        document.getElementById('home-card').classList.add('active');
+    }
+
+    function updateProfileUI() {
+        document.getElementById('welcome-text').innerText = `${currentUser.name} ${currentUser.surname} (${currentUser.age} yosh)`;
+        document.getElementById('user-trophies').innerText = currentUser.trophies;
+
+        let percent = Math.min(100, currentUser.trophies);
+        document.getElementById('circle-progress').style.setProperty('--progress', percent);
+        document.getElementById('progress-percent').innerText = `${percent}%`;
+
+        let level = "Boshlang'ich 🥉";
+        if (currentUser.trophies >= 75) level = "Afsonaviy 👑";
+        else if (currentUser.trophies >= 40) level = "Oltin 🥇";
+        else if (currentUser.trophies >= 20) level = "Kumush 🥈";
+        document.getElementById('user-level').innerText = `Daraja: ${level}`;
+
+        renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+        let leaderboard = JSON.parse(localStorage.getItem('bilim_pro_leaderboard') || '{}');
+        let sorted = Object.values(leaderboard).sort((a, b) => b.trophies - a.trophies);
+        
+        let html = '';
+        sorted.forEach((user, idx) => {
+            html += `<div class="leaderboard-item"><span>${idx + 1}. ${user.name}</span> <b>🏆 ${user.trophies}</b></div>`;
+        });
+        document.getElementById('leaderboard-list').innerHTML = html || 'Hozircha o\'quvchilar yo\'q.';
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById('home-card').classList.remove('active');
+        document.getElementById('login-card').classList.add('active');
+    }
+
+    // Savollarni va javoblarni aralashtirish funksiyasi (Randomizer)
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function startQuiz(subject) {
+        let rawQ = db[subject] || db.math;
+        // Savollarni tasodifiy aralashtirish
+        let shuffledQ = shuffleArray(rawQ);
+        
+        // Javob variantlarini ham har bir savol ichida aralashtirish
+        questions = shuffledQ.slice(0, 10).map(qItem => {
+            let options = [...qItem.options];
+            let correctText = options[qItem.correct];
+            let shuffledOptions = shuffleArray(options);
+            let newCorrectIndex = shuffledOptions.indexOf(correctText);
+            return {
+                q: qItem.q,
+                options: shuffledOptions,
+                correct: newCorrectIndex
+            };
+        });
+        
+        currentIndex = 0;
+        score = 0;
+        
+        document.getElementById('home-card').classList.remove('active');
+        document.getElementById('quiz-card').classList.add('active');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        selectedOption = null;
+        const q = questions[currentIndex];
+        document.getElementById('question-progress').innerText = `Savol: ${currentIndex + 1} / ${questions.length}`;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => {
+                document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedOption = idx;
+            };
+            container.appendChild(btn);
+        });
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timeLeft = 30;
+        document.getElementById('timer').innerText = `⏱ ${timeLeft}s`;
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = `⏱ ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                nextQuestion();
+            }
+        }, 1000);
+    }
+
+    function nextQuestion() {
+        clearInterval(timerInterval);
+        if (selectedOption !== null && selectedOption === questions[currentIndex].correct) {
+            score++;
+        }
+
+        currentIndex++;
+        if (currentIndex < questions.length) {
+            loadQuestion();
+        } else {
+            finishQuiz();
+        }
+    }
+
+    function finishQuiz() {
+        document.getElementById('quiz-card').classList.remove('active');
+        document.getElementById('result-card').classList.add('active');
+        
+        let earned = score;
+        currentUser.trophies = Math.min(100, currentUser.trophies + earned);
+        
+        localStorage.setItem(`trophies_${currentUser.key}`, currentUser.trophies);
+
+        let leaderboard = JSON.parse(localStorage.getItem('bilim_pro_leaderboard') || '{}');
+        if(leaderboard[currentUser.key]) {
+            leaderboard[currentUser.key].trophies = currentUser.trophies;
+            localStorage.setItem('bilim_pro_leaderboard', JSON.stringify(leaderboard));
+        }
+
+        document.getElementById('result-summary').innerText = `${currentUser.name}, siz ${questions.length} ta savoldan ${score} tasiga to'g'ri javob berdingiz!`;
+        document.getElementById('earned-trophies').innerText = `+${earned} 🏆 (Jami: ${currentUser.trophies})`;
+        
+        updateProfileUI();
+    }
+
+    // Mini-o'yin mantig'i
+    function startMiniGame() {
+        let game = miniGames[Math.floor(Math.random() * miniGames.length)];
+        document.getElementById('home-card').classList.remove('active');
+        document.getElementById('game-card-view').classList.add('active');
+        
+        document.getElementById('game-prompt').innerText = game.prompt;
+        let container = document.getElementById('game-options');
+        container.innerHTML = '';
+        
+        game.options.forEach((opt, idx) => {
+            let btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => {
+                if(idx === game.correct) {
+                    alert("Barakalla! To'g'ri javob topdingiz va +2 🏆 Kubok oldingiz!");
+                    currentUser.trophies = Math.min(100, currentUser.trophies + 2);
+                    localStorage.setItem(`trophies_${currentUser.key}`, currentUser.trophies);
+                    updateProfileUI();
+                } else {
+                    alert("Noto'g me'yoriy javob, keyingi safar omad yor bo'lsin!");
+                }
+                goHome();
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function goHome() {
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        document.getElementById('home-card').classList.add('active');
+    }
+</script>
+
+</body>
+</html>
